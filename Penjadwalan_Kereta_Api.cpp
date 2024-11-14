@@ -4,7 +4,7 @@
 #include <string>
 
 // Function Prototypes
-// int jeda();
+int jeda();
 bool isInteger(const std::string& str);
 bool isFloat(const std::string& str);
 int menu();
@@ -20,9 +20,10 @@ void displaySchedule(const struct DayNode* day); //Kiki
 void updateTrainSchedule(int trainID, int newHour); //Kiki
 void quickSort(); //Rava
 void mergeSort(); //Rava
-void fibonacciSearch(int trainID); //kiki
-void jumpSearch(int trainID); //kiki
-void boyerMooreSearch(int trainID); //kiki
+void fibonacciSearch(int trainID); //Rava
+void jumpSearch(int trainID); //Rava
+void boyerMooreSearch(int trainID); //Rava
+
 
 // Define Node structure for single linked list
 struct Node {
@@ -111,17 +112,18 @@ int main() {
             default:
                 std::cout << "Invalid choice. Please try again.\n";
         }
-        // jeda();
+        jeda();
     }
     return 0;
 }
 
 // Function Implementations
 
-// int jeda() {
-//     std::this_thread::sleep_for(std::chrono::seconds(2));
-//     return 0;
-// }
+int jeda() {
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    return 0;
+}
+
 
 bool isInteger(const std::string& str) {
     for (char const &c : str) {
@@ -415,6 +417,7 @@ void fibonacciSearch(int trainID) {
         current = current->next;
     }
     std::cout << "Train ID " << trainID << " not found.\n";
+
 }
 
 void jumpSearch(int trainID) {
