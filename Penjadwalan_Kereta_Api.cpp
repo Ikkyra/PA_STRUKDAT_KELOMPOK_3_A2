@@ -20,9 +20,9 @@ void displaySchedule(const struct DayNode* day); //Kiki
 void updateTrainSchedule(int trainID, int newHour); //Kiki
 void quickSort(); //Rava
 void mergeSort(); //Rava
-void fibonacciSearch(int trainID); //Rava
-void jumpSearch(int trainID); //Rava
-void boyerMooreSearch(int trainID); //Rava
+void fibonacciSearch(int trainID); //kiki
+void jumpSearch(int trainID); //kiki
+void boyerMooreSearch(int trainID); //kiki
 
 // Define Node structure for single linked list
 struct Node {
