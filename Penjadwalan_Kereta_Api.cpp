@@ -8,21 +8,21 @@ int jeda();
 bool isInteger(const std::string& str);
 bool isFloat(const std::string& str);
 int menu();
-void initializeWeekQueue();                
-void addTrainSchedule(int trainID, const std::string& destination); 
-void deleteTrainSchedule();     
-void displayTodaySchedule();             
-void advanceToNextDay();                 
-void enqueueDay(const std::string& day);
-void enqueueTrain(struct DayNode* day, int trainID, const std::string& destination, int hour);
-void deleteTrain(struct DayNode* day);
-void displaySchedule(const struct DayNode* day);          
-void updateTrainSchedule(int trainID, int newHour);
-void quickSort();
-void mergeSort();
-void fibonacciSearch(int trainID);
-void jumpSearch(int trainID);
-void boyerMooreSearch(int trainID);
+void initializeWeekQueue(); //Dika           
+void addTrainSchedule(int trainID, const std::string& destination); //Dika
+void deleteTrainSchedule(); //Dika
+void displayTodaySchedule(); //Dika       
+void advanceToNextDay(); //Dika                
+void enqueueDay(const std::string& day); //Kiki
+void enqueueTrain(struct DayNode* day, int trainID, const std::string& destination, int hour); //Kiki
+void deleteTrain(struct DayNode* day); //Kiki
+void displaySchedule(const struct DayNode* day); //Kiki          
+void updateTrainSchedule(int trainID, int newHour); //Kiki
+void quickSort(); //Rava
+void mergeSort(); //Rava
+void fibonacciSearch(int trainID); //Rava
+void jumpSearch(int trainID); //Rava
+void boyerMooreSearch(int trainID); //Rava
 
 // Define Node structure for single linked list
 struct Node {
@@ -119,7 +119,7 @@ int main() {
 // Function Implementations
 
 int jeda() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     return 0;
 }
 
@@ -142,24 +142,25 @@ bool isFloat(const std::string& str) {
 }
 
 int menu() {
-    system("cls");   // Windows OS
+    // system("cls");   // Windows OS
+    system("clear");   // Linux OS
     int pilihan;
-    std::cout << "=================================" << std::endl;
-    std::cout << " Train Station Scheduling System" << std::endl;
-    std::cout << "=================================" << std::endl;
-    std::cout << "1. Initialize Week Queue" << std::endl;
-    std::cout << "2. Add Train Schedule" << std::endl;
-    std::cout << "3. Update Train Schedule" << std::endl;
-    std::cout << "4. Delete Train Schedule" << std::endl;
-    std::cout << "5. Display Today's Schedule" << std::endl;
-    std::cout << "6. Advance to Next Day" << std::endl;
-    std::cout << "7. Quick Sort" << std::endl;
-    std::cout << "8. Merge Sort" << std::endl;
-    std::cout << "9. Fibonacci Search" << std::endl;
-    std::cout << "10. Jump Search" << std::endl;
-    std::cout << "11. Boyer-Moore Search" << std::endl;
-    std::cout << "0. Exit" << std::endl;
-    std::cout << "Enter choice: ";
+    std::cout << "===================================" << std::endl;
+    std::cout << "= Train Station Scheduling System =" << std::endl;
+    std::cout << "===================================" << std::endl;
+    std::cout << "[1] Initialize Week Queue          " << std::endl;
+    std::cout << "[2] Add Train Schedule             " << std::endl;
+    std::cout << "[3] Update Train Schedule          " << std::endl;
+    std::cout << "[4] Delete Train Schedule          " << std::endl;
+    std::cout << "[5] Display Today's Schedule       " << std::endl;
+    std::cout << "[6] Advance to Next Day            " << std::endl;
+    std::cout << "[7] Quick Sort                     " << std::endl;
+    std::cout << "[8] Merge Sort                     " << std::endl;
+    std::cout << "[9] Fibonacci Search               " << std::endl;
+    std::cout << "[10] Jump Search                   " << std::endl;
+    std::cout << "[11] Boyer-Moore Search            " << std::endl;
+    std::cout << "[0] Exit                           " << std::endl;
+    std::cout << "Enter choice:                      ";
     std::cin >> pilihan;
     return pilihan;
 }
