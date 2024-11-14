@@ -1,0 +1,156 @@
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <string>
+#include <vector>
+#include <queue>
+#include <stack>
+#include <unordered_map>
+
+// Function Prototypes
+int jeda();
+bool isInteger(const std::string& str);
+bool isFloat(const std::string& str);
+int menu();
+
+// Stack and Queue operations 
+void initializeWeekQueue();                
+void addTrainSchedule(int trainID, const std::string& destination); 
+void updateTrainSchedule(int trainID, int newHour); 
+void deleteTrainSchedule(int trainID);     
+void displayTodaySchedule();             
+void advanceToNextDay();                 
+
+// Sorting algorithms
+void quickSort();                          
+void mergeSort();          
+
+// Searching algorithms
+
+
+
+// Define Node
+struct Node {
+    int trainID;
+    std::string destination;
+    int hour; 
+};
+
+struct DaySchedule {
+    std::string dayName;
+    std::stack<int> availableHours;
+    std::vector<Node> trains;
+};
+
+// Global queue for the week
+std::queue<DaySchedule> weekQueue;
+
+int jeda(int detik) {
+    std::this_thread::sleep_for(std::chrono::seconds(detik));
+}
+
+bool isInteger(const std::string& str) {
+    for (char const &c : str) {
+        if (std::isdigit(c) == 0) return false;
+    }
+    return true;
+}
+
+bool isFloat(const std::string& str) {
+    bool decimalFound = false;
+    for (char const &c : str) {
+        if (c == '.') {
+            if (decimalFound) return false;
+            decimalFound = true;
+        } else if (std::isdigit(c) == 0) return false;
+    }
+    return true;
+}
+
+int menu() {
+    system("clear"); // Linux OS
+    system("cls");   // Windows OS
+    int pilihan;
+    std::cout << "=================================" << std::endl;
+    std::cout << " Train Station Scheduling System" << std::endl;
+    std::cout << "=================================" << std::endl;
+    std::cout << "1. Initialize Week Queue" << std::endl;
+    std::cout << "2. Add Train Schedule" << std::endl;
+    std::cout << "3. Update Train Schedule" << std::endl;
+    std::cout << "4. Delete Train Schedule" << std::endl;
+    std::cout << "5. Display Today's Schedule" << std::endl;
+    std::cout << "6. Advance to Next Day" << std::endl;
+    std::cout << "7. Quick Sort" << std::endl;
+    std::cout << "8. Merge Sort" << std::endl;
+    std::cout << "9. Fibonacci Search" << std::endl;
+    std::cout << "10. Jump Search" << std::endl;
+    std::cout << "11. Boyer-Moore Search" << std::endl;
+    std::cout << "0. Exit" << std::endl;
+    std::cout << "Enter choice: ";
+    std::cin >> pilihan;
+    return pilihan;
+}
+
+int main() {
+    int choice;
+    int trainID;
+    std::string destination;
+    int newHour;
+    while ((choice = menu()) != 0) {
+        switch(choice) {
+            case 1:
+                initializeWeekQueue();
+                break;
+            case 2:
+                std::cout << "Enter Train ID: ";
+                std::cin >> trainID;
+                std::cout << "Enter Destination: ";
+                std::cin >> destination;
+                addTrainSchedule(trainID, destination);
+                break;
+            case 3:
+                std::cout << "Enter Train ID to Update: ";
+                std::cin >> trainID;
+                std::cout << "Enter New Hour: ";
+                std::cin >> newHour;
+                updateTrainSchedule(trainID, newHour);
+                break;
+            case 4:
+                std::cout << "Enter Train ID to Delete: ";
+                std::cin >> trainID;
+                deleteTrainSchedule(trainID);
+                break;
+            case 5:
+                displayTodaySchedule();
+                break;
+            case 6:
+                advanceToNextDay();
+                break;
+            case 7:
+                quickSort();
+                break;
+            case 8:
+                mergeSort();
+                break;
+            case 9:
+                std::cout << "Enter Train ID for Fibonacci Search: ";
+                std::cin >> trainID;
+                // fibonacciSearch();
+                break;
+            case 10:
+                std::cout << "Enter Train ID for Jump Search: ";
+                std::cin >> trainID;
+                // jumpSearchtrainID);
+                break;
+            case 11:
+                std::cout << "Enter Train ID for Boyer-Moore Search: ";
+                std::cin >> trainID;
+                // boyerMooreSearch();
+                break;
+            default:
+                std::cout << "Invalid choice. Please try again.\n";
+        }
+        jeda();
+    }
+    return 0;
+}
