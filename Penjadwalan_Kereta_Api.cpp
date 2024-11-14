@@ -233,7 +233,7 @@ int countTrainsInDay(DayNode* day) {
     return count;
 }
 
-// Fungsi untuk menambahkan hari ke antrian minggu (linked list)
+// Function to add days to the week queue (linked list)
 void enqueueDay(const std::string& day) {
     DayNode* newDay = new DayNode(day);
     if (weekQueueHead == nullptr) {
@@ -249,7 +249,7 @@ void enqueueDay(const std::string& day) {
     }
 }
 
-// Menginisialisasi antrian minggu dengan nama hari
+// Initialize the week queue with the day name
 void initializeWeekQueue() {
     const char* days[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     for (int i = 0; i < 7; ++i) {
@@ -259,12 +259,10 @@ void initializeWeekQueue() {
 
 // Enqueue (add to the end of the list) a train schedule
 void enqueueTrain(DayNode* day, int trainID, const std::string& destination, const std::string& trainName, int hour) {
-    // Check if the train count is below the limit
     if (countTrainsInDay(day) >= 5) {
         std::cout << "Cannot add more trains for " << day->dayName << ". Maximum of 5 trains reached.\n";
         return;
     }
-    // Check the Train Id and departure hours
     Node* current = day->head;
     while (current != nullptr) {
         if (current->trainID == trainID) {
@@ -278,7 +276,6 @@ void enqueueTrain(DayNode* day, int trainID, const std::string& destination, con
         current = current->next;
     }
 
-    // Proceed to add train if limit is not exceeded and not the same train 
     Node* newNode = new Node(trainID, destination, trainName, hour);
     if (!day->head) {
         day->head = newNode;
@@ -292,7 +289,7 @@ void enqueueTrain(DayNode* day, int trainID, const std::string& destination, con
     std::cout << "Train added to " << day->dayName << " schedule.\n";
 }
 
-// Fungsi menambahkan jadwal kereta
+// Function of adding train schedules
 void addTrainSchedule(int trainID, const std::string& destination, const std::string& trainName, int hour) {
     if (!weekQueueHead) {
         std::cout << "No day schedule available. Initialize the week queue first.\n";
@@ -301,24 +298,22 @@ void addTrainSchedule(int trainID, const std::string& destination, const std::st
     enqueueTrain(weekQueueHead, trainID, destination, trainName, hour);
 }
 
-// Fungsi dequeue untuk menghapus kereta pertama dari daftar jadwal pada hari tertentu
+// Dequeue function to delete the first train from the schedule list on a given day
 void dequeueTrain(DayNode* day) {
-    if (day->head == nullptr) {  // Jika tidak ada jadwal
+    if (day->head == nullptr) {  // If theres no schedule 
         std::cout << "No train schedule to delete.\n";
         return;
     }
 
-    // Simpan pointer ke elemen pertama dan pindahkan head ke elemen berikutnya
     Node* temp = day->head;
     day->head = day->head->next;
 
-    // Hapus elemen pertama
     delete temp;
-    std::cout << "First train schedule deleted.\n";
+    std::cout << "First Train schedule deleted.\n";
 }
 
 
-// Fungsi untuk menghapus jadwal kereta pertama pada hari saat ini
+// Function to delete the first train schedule of the current day
 void deleteTrainSchedule() {
     if (weekQueueHead == nullptr) {
         std::cout << "No day schedule available.\n";
@@ -362,7 +357,7 @@ void displaySchedule(const DayNode* day) {
 }
 
 
-// Fungsi menampilkan jadwal hari ini
+// The function displays today's schedule
 void displayTodaySchedule() {
     if (weekQueueHead == nullptr) {
         std::cout << "No day schedule available.\n";
@@ -372,7 +367,7 @@ void displayTodaySchedule() {
     displaySchedule(weekQueueHead);
 }
 
-// Fungsi untuk memajukan hari ke hari berikutnya
+// Function to advance one day to the next day
 void advanceToNextDay() {
     if (weekQueueHead == nullptr) return;
     DayNode* temp = weekQueueHead;
@@ -533,7 +528,7 @@ void mergeSort() {
     }
 }
 
-// Menghitung jumlah node dalam linked list
+// Counts the number of nodes in a linked list
 int countNodes(Node* head) {
     int count = 0;
     while (head != nullptr) {
@@ -588,7 +583,6 @@ int* collecthours(int& numTrains) {
     return hours;
 }
 
-// Jump search implementation without using std::vector
 void jumpSearchByDeparture(int hour) {
     int numTrains;
     int* hours = collecthours(numTrains); 
@@ -620,7 +614,7 @@ void jumpSearchByDeparture(int hour) {
         }
     }
 
-    // Check if we found the train ID
+    // Check if the train ID be found
     if (hours[prev] == hour) {
         std::cout << "Train ID " << hour << " found.\n";
     } else {
