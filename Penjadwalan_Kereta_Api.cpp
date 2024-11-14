@@ -2,7 +2,6 @@
 #include <chrono>
 #include <thread>
 #include <string>
-#include <vector>
 #include <bits/stdc++.h> //sqrt for jumpsearch to work 
 
 
@@ -301,122 +300,255 @@ void updateTrainSchedule(int trainID, int newHour) {
     }
 }
 
-// Utility function to collect train nodes for sorting
-std::vector<Node*> collectTrains() {
-    std::vector<Node*> trains;
-    DayNode* currentDay = weekQueueHead;
-    while (currentDay != nullptr) {
-        Node* train = currentDay->head;
-        while (train != nullptr) {
-            trains.push_back(train);
-            train = train->next;
+// QuickSort partition function for linked list
+Node* partition(Node* low, Node* high, Node** newLow, Node** newHigh) {
+    Node* pivot = high;
+    Node* prev = nullptr, *cur = low, *tail = pivot;
+
+    while (cur != pivot) {
+        if (cur->trainID < pivot->trainID) {
+            if ((*newLow) == nullptr) (*newLow) = cur;
+            prev = cur;
+            cur = cur->next;
+        } else {
+            if (prev) prev->next = cur->next;
+            Node* temp = cur->next;
+            cur->next = nullptr;
+            tail->next = cur;
+            tail = cur;
+            cur = temp;
         }
-        currentDay = currentDay->next;
     }
-    return trains;
+    if ((*newLow) == nullptr) (*newLow) = pivot;
+    (*newHigh) = tail;
+    return pivot;
 }
 
+// Get the last node in a linked list
+Node* getTail(Node* head) {
+    while (head != nullptr && head->next != nullptr) {
+        head = head->next;
+    }
+    return head;
+}
+
+// Recursive QuickSort helper for linked list
+Node* quickSortHelper(Node* low, Node* high) {
+    if (!low || low == high) return low;
+
+    Node* newLow = nullptr, *newHigh = nullptr;
+    Node* pivot = partition(low, high, &newLow, &newHigh);
+
+    if (newLow != pivot) {
+        Node* temp = newLow;
+        while (temp->next != pivot) temp = temp->next;
+        temp->next = nullptr;
+
+        newLow = quickSortHelper(newLow, temp);
+
+        temp = getTail(newLow);
+        temp->next = pivot;
+    }
+
+    pivot->next = quickSortHelper(pivot->next, newHigh);
+    return newLow;
+}
+
+// QuickSort main function for today's schedule
 void quickSort() {
-    std::cout << "Quick sort algorithm executed.\n";
-    // Quick sort logic here
+    if (weekQueueHead && weekQueueHead->head) {
+        weekQueueHead->head = quickSortHelper(weekQueueHead->head, getTail(weekQueueHead->head));
+        std::cout << "Today's schedule sorted by Train ID (Quick Sort):\n";
+        displayTodaySchedule();  // Display the sorted schedule
+    }
 }
 
+// Merge function to merge two sorted linked lists for merge sort
+Node* merge(Node* left, Node* right) {
+    if (!left) return right;
+    if (!right) return left;
+
+    if (left->trainID < right->trainID) {
+        left->next = merge(left->next, right);
+        return left;
+    } else {
+        right->next = merge(left, right->next);
+        return right;
+    }
+}
+
+// Get the middle node of a linked list for merge sort
+Node* getMiddle(Node* head) {
+    if (head == nullptr) return head;
+    Node* slow = head;
+    Node* fast = head->next;
+    
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return slow;
+}
+
+// Recursive MergeSort helper function for linked list
+Node* mergeSortHelper(Node* head) {
+    if (!head || !head->next) return head;
+
+    Node* middle = getMiddle(head);
+    Node* nextOfMiddle = middle->next;
+    middle->next = nullptr;
+
+    Node* left = mergeSortHelper(head);
+    Node* right = mergeSortHelper(nextOfMiddle);
+
+    return merge(left, right);
+}
+
+// MergeSort main function for today's schedule
 void mergeSort() {
-    std::cout << "Merge sort algorithm executed.\n";
-    // Merge sort logic here
+    if (weekQueueHead && weekQueueHead->head) {
+        weekQueueHead->head = mergeSortHelper(weekQueueHead->head);
+        std::cout << "Today's schedule sorted by Train ID (Merge Sort):\n";
+        displayTodaySchedule();  // Display the sorted schedule
+    }
+}
+
+// Menghitung jumlah node dalam linked list
+int countNodes(Node* head) {
+    int count = 0;
+    while (head != nullptr) {
+        count++;
+        head = head->next;
+    }
+    return count;
 }
 
 void fibonacciSearch(int trainID) {
-    std::cout << "Fibonacci search executed for Train ID: " << trainID << std::endl;
-    // Fibonacci search logic here
+    Node* head = weekQueueHead->head;
+    int fibMMm2 = 0, fibMMm1 = 1, fibM = fibMMm2 + fibMMm1;
+    int offset = -1;
+
+    while (head && fibM < countNodes(head)) {
+        fibMMm2 = fibMMm1;
+        fibMMm1 = fibM;
+        fibM = fibMMm2 + fibMMm1;
+    }
+
+    Node* current = head;
+    while (current) {
+        if (current->trainID == trainID) {
+            std::cout << "Train ID " << trainID << " found.\n";
+            return;
+        }
+        current = current->next;
+    }
+    std::cout << "Train ID " << trainID << " not found.\n";
+
 }
 
+int* collectTrainIDs(int& numTrains) {
+    if (!weekQueueHead || !weekQueueHead->head) {
+        numTrains = 0;
+        return nullptr;
+    }
+
+    numTrains = 0;
+    Node* current = weekQueueHead->head;
+    while (current != nullptr) {
+        numTrains++;
+        current = current->next;
+    }
+
+    int* trainIDs = new int[numTrains];
+    current = weekQueueHead->head;
+    for (int i = 0; i < numTrains; i++) {
+        trainIDs[i] = current->trainID;
+        current = current->next;
+    }
+    return trainIDs;
+}
+
+// Jump search implementation without using std::vector
 void jumpSearch(int trainID) {
-    std::vector<Node*> trains = collectTrains();  // Get today's sorted train schedule
-    int n = trains.size();                        // Number of trains in today's schedule
-    int step = sqrt(n);                           // Optimal jump step size
-    int prev = 0;
+    int numTrains;
+    int* trainIDs = collectTrainIDs(numTrains); 
 
-    // Step 1: Jump forward by step size until we exceed or find the target
-    while (trains[std::min(step, n) - 1]->trainID < trainID) {
-        prev = step;                              // Move to the next block
-        step += sqrt(n);
-        if (prev >= n) {                          // If we've jumped past the end of the list
-            std::cout << "Train ID " << trainID << " not found.\n";
-            return;
-        }
-    }
-
-    // Step 2: Perform a linear search in the identified block
-    while (trains[prev]->trainID < trainID) {
-        prev++;
-        if (prev == std::min(step, n)) {          // Reached the end of the block
-            std::cout << "Train ID " << trainID << " not found.\n";
-            return;
-        }
-    }
-    
-    // Check if the element at `prev` is the target
-    if (trains[prev]->trainID == trainID) {
-        std::cout << "Train ID " << trainID << " found.\n";
-    } else {
-        std::cout << "Train ID " << trainID << " not found.\n";
-    }
-}
-
-
-// Utility function to build the bad character heuristic for integer values
-void badCharHeuristic(const std::vector<int>& trainIDs, int badChar[256]) {
-    // Initialize all occurrences as -1
-    for (int i = 0; i < 256; i++) {
-        badChar[i] = -1;
-    }
-    // Populate last occurrence of each character (trainID mod 256) in the trainIDs vector
-    for (int i = 0; i < trainIDs.size(); i++) {
-        badChar[trainIDs[i] % 256] = i;
-    }
-}
-
-// Boyer-Moore search for finding trainID in today's schedule
-void boyerMooreSearch(int trainID) {
-    std::vector<Node*> trains = collectTrains();  // Get today's schedule as a sorted list of train nodes
-    int n = trains.size();
-    if (n == 0) {
+    if (numTrains == 0) {
         std::cout << "No train schedule available.\n";
         return;
     }
 
-    // Extract train IDs into a vector of integers for easier comparison
-    std::vector<int> trainIDs;
-    for (const auto& train : trains) {
-        trainIDs.push_back(train->trainID);
+    int step = std::sqrt(numTrains);
+    int prev = 0;
+
+    while (trainIDs[std::min(step, numTrains) - 1] < trainID) {
+        prev = step;
+        step += std::sqrt(numTrains);
+        if (prev >= numTrains) {  
+            std::cout << "Train ID " << trainID << " not found.\n";
+            delete[] trainIDs;
+            return;
+        }
     }
 
-    // Build bad character table for trainIDs
+    while (trainIDs[prev] < trainID) {
+        prev++;
+        if (prev == std::min(step, numTrains)) { 
+            std::cout << "Train ID " << trainID << " not found.\n";
+            delete[] trainIDs; 
+            return;
+        }
+    }
+
+    // Check if we found the train ID
+    if (trainIDs[prev] == trainID) {
+        std::cout << "Train ID " << trainID << " found.\n";
+    } else {
+        std::cout << "Train ID " << trainID << " not found.\n";
+    }
+
+    delete[] trainIDs;  // Free dynamically allocated memory
+}
+
+void badCharHeuristic(int* trainIDs, int size, int badChar[256]) {
+    for (int i = 0; i < 256; i++) {
+        badChar[i] = -1;  
+    }
+    for (int i = 0; i < size; i++) {
+        badChar[trainIDs[i] % 256] = i;  
+    }
+}
+
+void boyerMooreSearch(int trainID) {
+    int numTrains;
+    int* trainIDs = collectTrainIDs(numTrains);
+
+    if (numTrains == 0) {
+        std::cout << "No train schedule available.\n";
+        return;
+    }
+
     int badChar[256];
-    badCharHeuristic(trainIDs, badChar);
+    badCharHeuristic(trainIDs, numTrains, badChar);
 
-    // Boyer-Moore search logic
-    int shift = 0;  // `shift` is the offset of the current position
-    while (shift <= n - 1) {
-        int j = n - 1;  // Start comparing from the end of the pattern
+    int shift = 0;
+    while (shift <= (numTrains - 1)) {
+        int j = numTrains - 1; 
 
-        // Check if the trainID matches at the current position
         while (j >= 0 && trainIDs[shift + j] == trainID) {
             j--;
         }
 
-        // If the pattern is found at the current shift
         if (j < 0) {
             std::cout << "Train ID " << trainID << " found in today's schedule.\n";
+            delete[] trainIDs; 
             return;
         }
 
-        // Shift the pattern based on the bad character heuristic
-        int badCharIndex = trainID % 256;  // Modulus to fit within the table range
+        int badCharIndex = trainID % 256; 
         shift += std::max(1, j - badChar[badCharIndex]);
     }
 
-    // If not found
     std::cout << "Train ID " << trainID << " not found in today's schedule.\n";
+    delete[] trainIDs;  
 }
