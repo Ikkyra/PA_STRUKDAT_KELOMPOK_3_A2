@@ -1,130 +1,187 @@
 #include <iostream>
-#include <chrono>
+#include <chrono> //
 #include <thread>
 #include <string>
-#include <bits/stdc++.h> //sqrt for jumpsearch to work 
-
+#include <cmath>
 
 // Function Prototypes
 int jeda();
+int menu();
+// Error Handling
 bool isInteger(const std::string& str);
 bool isFloat(const std::string& str);
-int menu();
-void initializeWeekQueue();          
-void addTrainSchedule(int trainID, const std::string& destination); 
-void deleteTrainSchedule(); 
-void displayTodaySchedule(); 
-void advanceToNextDay(); 
-void enqueueDay(const std::string& day); 
-void enqueueTrain(struct DayNode* day, int trainID, const std::string& destination, int hour); 
-void deleteTrain(struct DayNode* day); 
-void displaySchedule(const struct DayNode* day);           
-void updateTrainSchedule(int trainID, int newHour); 
-void quickSort(); 
-void mergeSort(); 
-void fibonacciSearch(int trainID); 
-void jumpSearch(int trainID); 
-void boyerMooreSearch(int trainID); 
+// CRUD
+void displaySchedule(const struct DayNode* day);
+// Single Linked List
+void advanceToNextDay();
+// Queue    
+void initializeWeekQueue();
+// Stack
+void addTrainSchedule(int trainID, const std::string& destination, const std::string& trainName, int hour);
+void enqueueDay(const std::string& day);
+void pushTrain(struct DayNode* day, int trainID, const std::string& destination, const std::string& trainName, int hour);
+void deleteTrainSchedule();
+void displayTodaySchedule();
+void updateTrainSchedule(int trainID, int newHour);
+// Sort
+void quickSort(int check);
+void mergeSort();
+// Search
+void fibonacciSearchByTrainID(int trainID);
+void jumpSearchByDeparture(int hour);
+void boyerMooreSearchByName(const std::string& trainName);
 
-// Define Node structure for single linked list
+// Mendefinisikan struktur node untuk single linked list
 struct Node {
     int trainID;
     std::string destination;
+    std::string trainName;
     int hour;
     Node* next;
 
-    Node(int id, const std::string& dest, int h) 
-        : trainID(id), destination(dest), hour(h), next(nullptr) {}
+    Node(int id, const std::string& dest, const std::string& name, int h)
+        : trainID(id), destination(dest), trainName(name), hour(h), next(nullptr) {}
 };
 
-// Node untuk hari-hari dalam satu minggu (pengganti `queue`)
+// Mendefinisikan node untuk tiap hari didalam linkedlist yang merepresentasikan hari diminggu tersebut
 struct DayNode {
     std::string dayName;
     Node* head;
     DayNode* next;
-    int availableHours[24];
 
-    DayNode(const std::string& day) : dayName(day), head(nullptr), next(nullptr) {
-        for (int i = 0; i < 24; ++i) availableHours[i] = i;
-    }
+    DayNode(const std::string& day) : dayName(day), head(nullptr), next(nullptr) {}
 };
 
-// Global head pointer untuk queue minggu
+// Global head pointer untuk minggu, nullptr karena belum di inisialisasi
 DayNode* weekQueueHead = nullptr;
 
-// Main Function
 int main() {
     int choice;
     int trainID;
     std::string destination;
+    std::string trainName;
+    int hour;
     int newHour;
+    std::string input;
 
     while ((choice = menu()) != 0) {
-        switch(choice) {
+        switch (choice) {
             case 1:
                 initializeWeekQueue();
                 break;
             case 2:
                 std::cout << "Enter Train ID: ";
-                std::cin >> trainID;
+                std::cin >> input;
+                while (!isInteger(input)) {
+                    std::cout << "Invalid input. Please enter an integer for Train ID: ";
+                    std::cin >> input;
+                }
+                trainID = std::stoi(input);
+
                 std::cout << "Enter Destination: ";
                 std::cin >> destination;
-                addTrainSchedule(trainID, destination);
+
+                std::cout << "Enter Train Name: ";
+                std::cin >> trainName;
+
+                std::cout << "Enter Departure Hour (in 9 to 5 format): ";
+                std::cin >> input;
+                while (!isInteger(input) || std::stoi(input) < 900 || std::stoi(input) > 1700 || std::stoi(input) % 100 >= 60) {
+                    std::cout << "Invalid input. Please enter a valid hour in 9 to 5 format: ";
+                    std::cin >> input;
+                }
+                hour = std::stoi(input);
+
+                addTrainSchedule(trainID, destination, trainName, hour);
                 break;
+
             case 3:
                 std::cout << "Enter Train ID to Update: ";
-                std::cin >> trainID;
-                std::cout << "Enter New Hour: ";
-                std::cin >> newHour;
+                std::cin >> input;
+                while (!isInteger(input)) {
+                    std::cout << "Invalid input. Please enter an integer for Train ID: ";
+                    std::cin >> input;
+                }
+                trainID = std::stoi(input);
+
+                std::cout << "Enter New Departure Hour (in 9 to 5 format): ";
+                std::cin >> input;
+                while (!isInteger(input) || std::stoi(input) < 900 || std::stoi(input) > 1700 || std::stoi(input) % 100 >= 60) {
+                    std::cout << "Invalid input. Please enter a valid hour in 9 to 5 format: ";
+                    std::cin >> input;
+                }
+                newHour = std::stoi(input);
+
                 updateTrainSchedule(trainID, newHour);
                 break;
+
             case 4:
-                std::cout << "Enter Train ID to Delete: ";
-                std::cin >> trainID;
                 deleteTrainSchedule();
                 break;
+
             case 5:
                 displayTodaySchedule();
                 break;
+
             case 6:
                 advanceToNextDay();
                 break;
+
             case 7:
-                quickSort();
+                quickSort(0);
                 break;
+
             case 8:
                 mergeSort();
                 break;
+
             case 9:
-                std::cout << "Enter Train ID for Fibonacci Search: ";
-                std::cin >> trainID;
-                fibonacciSearch(trainID);
+                quickSort(1);
+                std::cout << "Enter Train ID to Search: ";
+                std::cin >> input;
+                while (!isInteger(input)) {
+                    std::cout << "Invalid input. Please enter an integer for Train ID: ";
+                    std::cin >> input;
+                }
+                trainID = std::stoi(input);
+
+                fibonacciSearchByTrainID(trainID);
                 break;
+
             case 10:
-                std::cout << "Enter Train ID for Jump Search: ";
-                std::cin >> trainID;
-                jumpSearch(trainID);
+                std::cout << "Enter Departure Hour to Search: ";
+                std::cin >> input;
+                while (!isInteger(input) || std::stoi(input) < 900 || std::stoi(input) > 1700 || std::stoi(input) % 100 >= 60) {
+                    std::cout << "Invalid input. Please enter a valid hour in 9 to 5 Operasional time: ";
+                    std::cin >> input;
+                }
+                hour = std::stoi(input);
+
+                jumpSearchByDeparture(hour);
                 break;
+
             case 11:
-                std::cout << "Enter Train ID for Boyer-Moore Search: ";
-                std::cin >> trainID;
-                boyerMooreSearch(trainID);
+                std::cout << "Enter Train Name to Search: ";
+                std::cin >> trainName;
+                boyerMooreSearchByName(trainName);
                 break;
+
             default:
                 std::cout << "Invalid choice. Please try again.\n";
         }
+
         jeda();
     }
     return 0;
 }
 
-// Function Implementations
-
+// Digunakan untuk "mem-pause" program selama 2 detik
 int jeda() {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     return 0;
 }
 
+// Digunakan untuk mengecek apakah input merupakan integer
 bool isInteger(const std::string& str) {
     for (char const &c : str) {
         if (std::isdigit(c) == 0) return false;
@@ -132,6 +189,7 @@ bool isInteger(const std::string& str) {
     return true;
 }
 
+// Digunakan untuk mengecek apakah input merupakan float
 bool isFloat(const std::string& str) {
     bool decimalFound = false;
     for (char const &c : str) {
@@ -150,24 +208,34 @@ int menu() {
     std::cout << "===================================" << std::endl;
     std::cout << "= Train Station Scheduling System =" << std::endl;
     std::cout << "===================================" << std::endl;
-    std::cout << "[1] Initialize Week Queue          " << std::endl; // dika
-    std::cout << "[2] Add Train Schedule             " << std::endl; // dika
-    std::cout << "[3] Update Train Schedule          " << std::endl; // kiki
-    std::cout << "[4] Delete Train Schedule          " << std::endl; // dika
-    std::cout << "[5] Display Today's Schedule       " << std::endl; // dika
-    std::cout << "[6] Advance to Next Day            " << std::endl; // dika
-    std::cout << "[7] Quick Sort                     " << std::endl; // rava
-    std::cout << "[8] Merge Sort                     " << std::endl; // rava
-    std::cout << "[9] Fibonacci Search               " << std::endl; // rava
-    std::cout << "[10] Jump Search                   " << std::endl; // kiki
-    std::cout << "[11] Boyer-Moore Search            " << std::endl; // kiki
+    std::cout << "[1] Initialize Week Queue          " << std::endl; 
+    std::cout << "[2] Add Train Schedule             " << std::endl; 
+    std::cout << "[3] Update Train Schedule          " << std::endl; 
+    std::cout << "[4] Delete Train Schedule          " << std::endl; 
+    std::cout << "[5] Display Today's Schedule       " << std::endl; 
+    std::cout << "[6] Advance to Next Day            " << std::endl; 
+    std::cout << "[7] Sort by Train Departure        " << std::endl; 
+    std::cout << "[8] Sort by Train Name             " << std::endl; 
+    std::cout << "[9] Search by Train Id             " << std::endl; 
+    std::cout << "[10] Search by Train Departure     " << std::endl; 
+    std::cout << "[11] Search by Train Name          " << std::endl; 
     std::cout << "[0] Exit                           " << std::endl;
     std::cout << "Enter choice: ";
     std::cin >> pilihan;
     return pilihan;
 }
 
-// Fungsi untuk menambahkan hari ke antrian minggu (linked list)
+int countTrainsInDay(DayNode* day) {
+    int count = 0;
+    Node* temp = day->head;
+    while (temp != nullptr) {
+        count++;
+        temp = temp->next;
+    }
+    return count;
+}
+
+// Menambah hari kedalam queue mingguan (Linked List)
 void enqueueDay(const std::string& day) {
     DayNode* newDay = new DayNode(day);
     if (weekQueueHead == nullptr) {
@@ -183,7 +251,7 @@ void enqueueDay(const std::string& day) {
     }
 }
 
-// Menginisialisasi antrian minggu dengan nama hari
+// Inisialisasi minggu dengan nama hari
 void initializeWeekQueue() {
     const char* days[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     for (int i = 0; i < 7; ++i) {
@@ -191,50 +259,60 @@ void initializeWeekQueue() {
     }
 }
 
-// Enqueue (add to the end of the list) a train schedule
-void enqueueTrain(DayNode* day, int trainID, const std::string& destination, int hour) {
-    Node* newNode = new Node(trainID, destination, hour);
-    if (day->head == nullptr) {
-        day->head = newNode;
-    } else {
-        Node* temp = day->head;
-        while (temp->next != nullptr) {
-            temp = temp->next;
-        }
-        temp->next = newNode;
+// Menambahkan jadwal kereta ke hari tertentu
+void pushTrain(DayNode* day, int trainID, const std::string& destination, const std::string& trainName, int hour) {
+    if (countTrainsInDay(day) >= 5) {
+        std::cout << "Cannot add more trains for " << day->dayName << ". Maximum of 5 trains reached.\n";
+        return;
     }
+
+    Node* current = day->head;
+    while (current != nullptr) {
+        if (current->trainID == trainID) {
+            std::cout << "Train ID " << trainID << " already exists in today's schedule. Cannot add duplicate.\n";
+            return;
+        }
+        if (current->hour == hour) {
+            std::cout << "A train is already scheduled to depart at " << hour << ". Cannot add another train at the same hour.\n";
+            return;
+        }
+        current = current->next;
+    }
+
+    Node* newNode = new Node(trainID, destination, trainName, hour);
+
+    // Stack
+    newNode->next = day->head;
+    day->head = newNode;
+
+    std::cout << "Train added to " << day->dayName << " schedule.\n";
 }
 
-// Fungsi menambahkan jadwal kereta
-void addTrainSchedule(int trainID, const std::string& destination) {
-    if (weekQueueHead == nullptr) {
+// Menambahkan jadwal kereta
+void addTrainSchedule(int trainID, const std::string& destination, const std::string& trainName, int hour) {
+    if (!weekQueueHead) {
         std::cout << "No day schedule available. Initialize the week queue first.\n";
         return;
     }
-    int hour;
-    std::cout << "Enter Hour: ";
-    std::cin >> hour;
-    enqueueTrain(weekQueueHead, trainID, destination, hour);
+    pushTrain(weekQueueHead, trainID, destination, trainName, hour);
 }
 
-// Fungsi dequeue untuk menghapus kereta pertama dari daftar jadwal pada hari tertentu
+// Menghapus Kereta pertama dari list jadwal pada hari tertentu
 void dequeueTrain(DayNode* day) {
-    if (day->head == nullptr) {  // Jika tidak ada jadwal
+    if (day->head == nullptr) {  // Jika Tidak jadwal
         std::cout << "No train schedule to delete.\n";
         return;
     }
 
-    // Simpan pointer ke elemen pertama dan pindahkan head ke elemen berikutnya
     Node* temp = day->head;
     day->head = day->head->next;
 
-    // Hapus elemen pertama
     delete temp;
-    std::cout << "First train schedule deleted.\n";
+    std::cout << "First Train schedule deleted.\n";
 }
 
 
-// Fungsi untuk menghapus jadwal kereta pertama pada hari saat ini
+// Digunakan untuk Menghapus Train Schedule
 void deleteTrainSchedule() {
     if (weekQueueHead == nullptr) {
         std::cout << "No day schedule available.\n";
@@ -248,14 +326,32 @@ void deleteTrainSchedule() {
 void displaySchedule(const DayNode* day) {
     Node* temp = day->head;
     while (temp != nullptr) {
-        std::cout << "Train ID: " << temp->trainID 
-                  << ", Destination: " << temp->destination 
-                  << ", Hour: " << temp->hour << std::endl;
+        // Mengubah Hour ke format jam dan menit
+        int hour = temp->hour;
+        std::string ampm = "AM";
+        int displayHour = hour / 100; // Untuk waktu jam
+        int minutes = hour % 100;    // Untuk Waktu Menit
+        
+        if (displayHour >= 12) {
+            ampm = "PM";
+            if (displayHour > 12) {
+                displayHour -= 12;  // mengubah ke foramt 12 jam
+            }
+        }
+
+        std::cout << "Train ID: " << temp->trainID
+                  << ", Destination: " << temp->destination
+                  << ", Train Name: " << temp->trainName
+                  << ", Hour: " << displayHour << ":"
+                  << (minutes < 10 ? "0" : "") << minutes  // Memastikan dua digit untuk menit
+                  << " " << ampm << std::endl;
+
         temp = temp->next;
     }
 }
 
-// Fungsi menampilkan jadwal hari ini
+
+// Fungsi untuk menampilkan jadwal hari ini
 void displayTodaySchedule() {
     if (weekQueueHead == nullptr) {
         std::cout << "No day schedule available.\n";
@@ -265,7 +361,7 @@ void displayTodaySchedule() {
     displaySchedule(weekQueueHead);
 }
 
-// Fungsi untuk memajukan hari ke hari berikutnya
+// Memajukan Head list ke hari selanjutnya dan menghapus head list sebelumnya
 void advanceToNextDay() {
     if (weekQueueHead == nullptr) return;
     DayNode* temp = weekQueueHead;
@@ -281,10 +377,22 @@ void updateTrainSchedule(int trainID, int newHour) {
         std::cout << "No day schedule available.\n";
         return;
     }
-    
+
+    // mengecek apakah kereta lain sudah memiliki jam baru yang diubah
     Node* current = weekQueueHead->head;
+    while (current != nullptr) {
+        if (current->hour == newHour) {
+            std::cout << "A train is already scheduled to depart at " << newHour << ". Cannot update to the same hour.\n";
+            return;
+        }
+        current = current->next;
+    }
+
+    // Reset pointer skrg ke head untuk mencari trainID
+    current = weekQueueHead->head;
     bool found = false;
 
+    // Mencari Train ID dan mengupdate jamnya
     while (current != nullptr) {
         if (current->trainID == trainID) {
             current->hour = newHour;
@@ -300,23 +408,39 @@ void updateTrainSchedule(int trainID, int newHour) {
     }
 }
 
-// QuickSort partition function for linked list
-Node* partition(Node* low, Node* high, Node** newLow, Node** newHigh) {
+
+// Partisi linked list untuk QuickSort yang membagi linked list menjadi dua bagian
+Node* partition(int check, Node* low, Node* high, Node** newLow, Node** newHigh) {
     Node* pivot = high;
     Node* prev = nullptr, *cur = low, *tail = pivot;
 
     while (cur != pivot) {
-        if (cur->trainID < pivot->trainID) {
-            if ((*newLow) == nullptr) (*newLow) = cur;
-            prev = cur;
-            cur = cur->next;
-        } else {
-            if (prev) prev->next = cur->next;
-            Node* temp = cur->next;
-            cur->next = nullptr;
-            tail->next = cur;
-            tail = cur;
-            cur = temp;
+        if(check == 1){
+            if (cur->trainID < pivot->trainID) {
+                if ((*newLow) == nullptr) (*newLow) = cur;
+                prev = cur;
+                cur = cur->next;
+            } else {
+                if (prev) prev->next = cur->next;
+                Node* temp = cur->next;
+                cur->next = nullptr;
+                tail->next = cur;
+                tail = cur;
+                cur = temp;
+            }
+        }else{
+            if (cur->hour < pivot->hour) {
+                if ((*newLow) == nullptr) (*newLow) = cur;
+                prev = cur;
+                cur = cur->next;
+            } else {
+                if (prev) prev->next = cur->next;
+                Node* temp = cur->next;
+                cur->next = nullptr;
+                tail->next = cur;
+                tail = cur;
+                cur = temp;
+            }
         }
     }
     if ((*newLow) == nullptr) (*newLow) = pivot;
@@ -324,7 +448,7 @@ Node* partition(Node* low, Node* high, Node** newLow, Node** newHigh) {
     return pivot;
 }
 
-// Get the last node in a linked list
+// Mengambil node terakhir di linked list
 Node* getTail(Node* head) {
     while (head != nullptr && head->next != nullptr) {
         head = head->next;
@@ -332,43 +456,45 @@ Node* getTail(Node* head) {
     return head;
 }
 
-// Recursive QuickSort helper for linked list
-Node* quickSortHelper(Node* low, Node* high) {
+// Fungsi quicksort rekursif untuk linked list
+Node* quickSortHelper(int check, Node* low, Node* high) {
     if (!low || low == high) return low;
 
     Node* newLow = nullptr, *newHigh = nullptr;
-    Node* pivot = partition(low, high, &newLow, &newHigh);
+    Node* pivot = partition(check, low, high, &newLow, &newHigh);
 
     if (newLow != pivot) {
         Node* temp = newLow;
         while (temp->next != pivot) temp = temp->next;
         temp->next = nullptr;
 
-        newLow = quickSortHelper(newLow, temp);
+        newLow = quickSortHelper(check, newLow, temp);
 
         temp = getTail(newLow);
         temp->next = pivot;
     }
 
-    pivot->next = quickSortHelper(pivot->next, newHigh);
+    pivot->next = quickSortHelper(check, pivot->next, newHigh);
     return newLow;
 }
 
-// QuickSort main function for today's schedule
-void quickSort() {
+// Fungsi utama quicksort untuk jadwal hari ini
+void quickSort(int check) {
     if (weekQueueHead && weekQueueHead->head) {
-        weekQueueHead->head = quickSortHelper(weekQueueHead->head, getTail(weekQueueHead->head));
+        weekQueueHead->head = quickSortHelper(check ,weekQueueHead->head, getTail(weekQueueHead->head));
+        if (check == 0) {
         std::cout << "Today's schedule sorted by Train ID (Quick Sort):\n";
-        displayTodaySchedule();  // Display the sorted schedule
+        displayTodaySchedule();  // Menampilkan jadwal yang sudah diurutkan
+        }
     }
 }
 
-// Merge function to merge two sorted linked lists for merge sort
+// Fungsi merge untuk menggabungkan dua linked list yang sudah diurutkan untuk merge sort
 Node* merge(Node* left, Node* right) {
     if (!left) return right;
     if (!right) return left;
 
-    if (left->trainID < right->trainID) {
+    if (left->trainName < right->trainName) {
         left->next = merge(left->next, right);
         return left;
     } else {
@@ -377,7 +503,7 @@ Node* merge(Node* left, Node* right) {
     }
 }
 
-// Get the middle node of a linked list for merge sort
+// Mengambilkan node tengah dari linked list untuk merge sort
 Node* getMiddle(Node* head) {
     if (head == nullptr) return head;
     Node* slow = head;
@@ -390,7 +516,7 @@ Node* getMiddle(Node* head) {
     return slow;
 }
 
-// Recursive MergeSort helper function for linked list
+// Fungsi bantu MergeSort rekursif untuk linked list
 Node* mergeSortHelper(Node* head) {
     if (!head || !head->next) return head;
 
@@ -404,12 +530,13 @@ Node* mergeSortHelper(Node* head) {
     return merge(left, right);
 }
 
-// MergeSort main function for today's schedule
+// Fungsi utama MergeSort untuk jadwal hari ini
 void mergeSort() {
+
     if (weekQueueHead && weekQueueHead->head) {
         weekQueueHead->head = mergeSortHelper(weekQueueHead->head);
-        std::cout << "Today's schedule sorted by Train ID (Merge Sort):\n";
-        displayTodaySchedule();  // Display the sorted schedule
+        std::cout << "Today's schedule sorted by Train Name:\n";
+        displayTodaySchedule();
     }
 }
 
@@ -423,30 +550,86 @@ int countNodes(Node* head) {
     return count;
 }
 
-void fibonacciSearch(int trainID) {
-    Node* head = weekQueueHead->head;
-    int fibMMm2 = 0, fibMMm1 = 1, fibM = fibMMm2 + fibMMm1;
-    int offset = -1;
-
-    while (head && fibM < countNodes(head)) {
-        fibMMm2 = fibMMm1;
-        fibMMm1 = fibM;
-        fibM = fibMMm2 + fibMMm1;
+void fibonacciSearchByTrainID(int trainID) {
+    if (!weekQueueHead || !weekQueueHead->head) {
+        std::cout << "No train schedule available.\n";
+        return;
     }
 
-    Node* current = head;
-    while (current) {
-        if (current->trainID == trainID) {
-            std::cout << "Train ID " << trainID << " found.\n";
+    // Cek elemen pertama sebelum memulai perhitungan Fibonacci
+    if (weekQueueHead->head->trainID == trainID) {
+        std::cout << "Train ID " << trainID << " found. Details:\n";
+        std::cout << "Destination: " << weekQueueHead->head->destination << "\n";
+        std::cout << "Train Name: " << weekQueueHead->head->trainName << "\n";
+        std::cout << "Departure Hour: " << weekQueueHead->head->hour / 100 << ":"
+                  << (weekQueueHead->head->hour % 100 < 10 ? "0" : "") << weekQueueHead->head->hour % 100 << "\n";
+        return;  // Selesai, karena sudah ditemukan di elemen pertama
+    }
+
+    int nodeCount = countNodes(weekQueueHead->head); // Jumlah node dalam jadwal
+    const Node* current = weekQueueHead->head;
+
+    // Hitung bilangan Fibonacci yang lebih besar atau sama dengan jumlah node
+    int fibM2 = 0; 
+    int fibM1 = 1;
+    int fibM = fibM2 + fibM1; 
+
+    while (fibM < nodeCount) {
+        fibM2 = fibM1;
+        fibM1 = fibM;
+        fibM = fibM2 + fibM1;
+    }
+
+    int offset = -1;  // Menandai elemen terakhir yang diperiksa
+
+    // Lakukan pencarian Fibonacci
+    while (fibM > 1) {
+        // Cari indeks yang valid untuk dibandingkan
+        int i = std::min(offset + fibM2, nodeCount - 1);
+
+        // Pindahkan ke node pada indeks i
+        const Node* temp = current;
+        for (int j = 0; j <= i && temp; j++) {
+            temp = temp->next;
+        }
+
+        if (!temp) break;
+
+        if (temp->trainID < trainID) {
+            // Geser rentang: fibM1 menjadi fibM, fibM2 menjadi fibM1
+            fibM = fibM1;
+            fibM1 = fibM2;
+            fibM2 = fibM - fibM1;
+            offset = i;  // Perbarui offset
+        } else if (temp->trainID > trainID) {
+            // Geser rentang: fibM2 menjadi fibM, fibM1 menjadi fibM2
+            fibM = fibM2;
+            fibM1 -= fibM2;
+            fibM2 = fibM - fibM1;
+        } else {
+            // Kereta ditemukan
+            std::cout << "Train ID " << trainID << " found. Details:\n";
+            std::cout << "Destination: " << temp->destination << "\n";
+            std::cout << "Departure Hour: " << temp->hour / 100 << ":"
+                      << (temp->hour % 100 < 10 ? "0" : "") << temp->hour % 100 << "\n";
             return;
         }
-        current = current->next;
     }
-    std::cout << "Train ID " << trainID << " not found.\n";
 
+    // Periksa elemen terakhir
+    if (fibM1 && current && current->trainID == trainID) {
+        std::cout << "Train ID " << trainID << " found. Details:\n";
+        std::cout << "Destination: " << current->destination << "\n";
+        std::cout << "Departure Hour: " << current->hour / 100 << ":"
+                  << (current->hour % 100 < 10 ? "0" : "") << current->hour % 100 << "\n";
+        return;
+    }
+
+    std::cout << "Train ID " << trainID << " not found.\n";
 }
 
-int* collectTrainIDs(int& numTrains) {
+
+int* collecthours(int& numTrains) {
     if (!weekQueueHead || !weekQueueHead->head) {
         numTrains = 0;
         return nullptr;
@@ -459,96 +642,148 @@ int* collectTrainIDs(int& numTrains) {
         current = current->next;
     }
 
-    int* trainIDs = new int[numTrains];
+    int* hours = new int[numTrains];
     current = weekQueueHead->head;
     for (int i = 0; i < numTrains; i++) {
-        trainIDs[i] = current->trainID;
+        hours[i] = current->hour;
         current = current->next;
     }
-    return trainIDs;
+    return hours;
 }
 
-// Jump search implementation without using std::vector
-void jumpSearch(int trainID) {
+void jumpSearchByDeparture(int hour) {
     int numTrains;
-    int* trainIDs = collectTrainIDs(numTrains); 
+    int* hours = collecthours(numTrains);  // mendapatkan semua jam keberangkatan
 
     if (numTrains == 0) {
         std::cout << "No train schedule available.\n";
         return;
     }
 
-    int step = std::sqrt(numTrains);
+    int step = std::sqrt(numTrains); 
     int prev = 0;
 
-    while (trainIDs[std::min(step, numTrains) - 1] < trainID) {
+    // Mencari blok dimana jam mungkin ada
+    while (hours[std::min(step, numTrains) - 1] < hour) {
         prev = step;
         step += std::sqrt(numTrains);
-        if (prev >= numTrains) {  
-            std::cout << "Train ID " << trainID << " not found.\n";
-            delete[] trainIDs;
+        if (prev >= numTrains) {
+            std::cout << "Departure hour " << hour << " not found.\n";
+            delete[] hours;
             return;
         }
     }
 
-    while (trainIDs[prev] < trainID) {
+    // Menjalankan pencarian linier dalam blok yang diidentifikasi
+    while (prev < std::min(step, numTrains) && hours[prev] < hour) {
         prev++;
-        if (prev == std::min(step, numTrains)) { 
-            std::cout << "Train ID " << trainID << " not found.\n";
-            delete[] trainIDs; 
-            return;
+    }
+
+    // Cek apakah jam ada
+    if (prev < numTrains && hours[prev] == hour) {
+        std::cout << "Departure hour " << hour << " found. Here is the schedule:\n";
+
+        // Traverse queue mingguan dan menampilkan kereta yang sesuai dengan jam
+        DayNode* currentDay = weekQueueHead;
+        bool found = false;
+
+        while (currentDay != nullptr) {
+            Node* temp = currentDay->head;
+            while (temp != nullptr) {
+                if (temp->hour == hour) {
+                    if (!found) {
+                        std::cout << "Train(s) departing at " << hour << ":\n";
+                    }
+                    std::cout << "Day: " << currentDay->dayName << std::endl;
+                    std::cout << "  Train ID: " << temp->trainID
+                              << ", Destination: " << temp->destination
+                              << ", Train Name: " << temp->trainName
+                              << ", Hour: " << hour / 100 << ":"
+                              << (hour % 100 < 10 ? "0" : "") << hour % 100
+                              << std::endl;
+                    found = true;
+                }
+                temp = temp->next;
+            }
+            currentDay = currentDay->next;
         }
-    }
 
-    // Check if we found the train ID
-    if (trainIDs[prev] == trainID) {
-        std::cout << "Train ID " << trainID << " found.\n";
+        if (!found) {
+            std::cout << "No trains found departing at " << hour << ".\n";
+        }
     } else {
-        std::cout << "Train ID " << trainID << " not found.\n";
+        std::cout << "Departure hour " << hour << " not found.\n";
     }
 
-    delete[] trainIDs;  // Free dynamically allocated memory
+    delete[] hours;  //Membuang memori yang dialokasikan secara dinamis
 }
 
-void badCharHeuristic(int* trainIDs, int size, int badChar[256]) {
+
+void badCharHeuristic(const std::string& trainName, int badChar[256]) {
+    // Inisialisasi semua kemunculan sebagai -1 (karakter tidak ada dalam pola)
     for (int i = 0; i < 256; i++) {
-        badChar[i] = -1;  
+        badChar[i] = -1;
     }
-    for (int i = 0; i < size; i++) {
-        badChar[trainIDs[i] % 256] = i;  
+
+    // Memenuhi kemunculan aktual dari setiap karakter dalam pola
+    for (int i = 0; i < trainName.size(); i++) {
+        badChar[(int)trainName[i]] = i;
     }
 }
 
-void boyerMooreSearch(int trainID) {
-    int numTrains;
-    int* trainIDs = collectTrainIDs(numTrains);
 
-    if (numTrains == 0) {
+void boyerMooreSearchByName(const std::string& targetName) {
+    if (!weekQueueHead) {
         std::cout << "No train schedule available.\n";
         return;
     }
 
-    int badChar[256];
-    badCharHeuristic(trainIDs, numTrains, badChar);
+    DayNode* currentDay = weekQueueHead;
+    bool found = false;
 
-    int shift = 0;
-    while (shift <= (numTrains - 1)) {
-        int j = numTrains - 1; 
+    while (currentDay != nullptr) {
+        Node* temp = currentDay->head;  // Memulai dari kereta pertama hari itu
+        while (temp != nullptr) {
+            int m = targetName.size();
+            int n = temp->trainName.size();
 
-        while (j >= 0 && trainIDs[shift + j] == trainID) {
-            j--;
+            int badChar[256];
+            badCharHeuristic(targetName, badChar);
+
+            int shift = 0;  // Memindah pola terhadap teks
+            while (shift <= (n - m)) {
+                int j = m - 1;
+
+                // Mengurangi indeks j pola ketika karakter pola dan teks cocok
+                while (j >= 0 && targetName[j] == temp->trainName[shift + j]) {
+                    j--;
+                }
+
+                // Jika pola cocok dengan substring teks
+                if (j < 0) {
+                    std::cout << "Train Name \"" << targetName << "\" found on " << currentDay->dayName << ".\n";
+                    std::cout << "Details:\n";
+                    std::cout << "  Train ID: " << temp->trainID << "";
+                    std::cout << "  Train Name: " << temp->trainName << "";
+                    std::cout << "  Destination: " << temp->destination << "";
+                    std::cout << "  Departure Hour: " << temp->hour << "\n";
+                    found = true;
+                    break;
+                } else {
+                    // menggeser pola sehingga karakter buruk dalam teks sejajar dengan kemunculan terakhirnya dalam pola
+                    shift += std::max(1, j - badChar[(int)temp->trainName[shift + j]]);
+                }
+            }
+
+            if (found) break;
+            temp = temp->next;  // Pindah ke kereta berikutnya
         }
 
-        if (j < 0) {
-            std::cout << "Train ID " << trainID << " found in today's schedule.\n";
-            delete[] trainIDs; 
-            return;
-        }
-
-        int badCharIndex = trainID % 256; 
-        shift += std::max(1, j - badChar[badCharIndex]);
+        if (found) break;
+        currentDay = currentDay->next;  // Pindah ke jadwal hari berikutnya
     }
 
-    std::cout << "Train ID " << trainID << " not found in today's schedule.\n";
-    delete[] trainIDs;  
+    if (!found) {
+        std::cout << "Train Name \"" << targetName << "\" not found in the weekly schedule.\n";
+    }
 }
