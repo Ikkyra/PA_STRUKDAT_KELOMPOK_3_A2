@@ -405,7 +405,7 @@ void updateTrainSchedule(int trainID, int newHour) {
             current->hour = newHour;
             std::cout << "Train schedule updated for Train ID " << trainID << " to new hour " << newHour << ".\n";
             found = true;
-            break;
+            break; 
         }
         current = current->next;
     }
@@ -592,27 +592,74 @@ int countNodes(Node* head) {
 }
 
 void fibonacciSearchByTrainID(int trainID) {
-    Node* head = weekQueueHead->head;
-    int fibMMm2 = 0, fibMMm1 = 1, fibM = fibMMm2 + fibMMm1;
-    int offset = -1;
+    if (!weekQueueHead || !weekQueueHead->head) {
+        std::cout << "No train schedule available.\n";
+        return;
+    }
 
-    while (head && fibM < countNodes(head)) {
+    // Calculate Fibonacci numbers
+    int fibMMm2 = 0;  // (m-2)'th Fibonacci number
+    int fibMMm1 = 1;  // (m-1)'th Fibonacci number
+    int fibM = fibMMm2 + fibMMm1;  // m'th Fibonacci number
+
+    int nodeCount = countNodes(weekQueueHead->head); // Count the nodes (schedule entries)
+
+    // Find the smallest Fibonacci number greater than or equal to the number of nodes
+    while (fibM < nodeCount) {
         fibMMm2 = fibMMm1;
         fibMMm1 = fibM;
         fibM = fibMMm2 + fibMMm1;
     }
 
-    Node* current = head;
-    while (current) {
-        if (current->trainID == trainID) {
-            std::cout << "Train ID " << trainID << " found.\n";
+    int offset = -1;  // Marks the eliminated range from the front
+    Node* current = weekQueueHead->head;
+
+    // Perform the Fibonacci search
+    while (fibM > 1) {
+        // Find the valid index to compare, offset + fibMMm2
+        int i = std::min(offset + fibMMm2, nodeCount - 1);
+
+        // Move to the node at index `i`
+        Node* temp = current;
+        for (int j = 0; j < i && temp; j++) {
+            temp = temp->next;
+        }
+
+        if (!temp) break;
+
+        if (temp->trainID < trainID) {
+            // Shift range: fibMMm1 becomes fibM, fibMMm2 becomes fibMMm1
+            fibM = fibMMm1;
+            fibMMm1 = fibMMm2;
+            fibMMm2 = fibM - fibMMm1;
+            offset = i;  // Update offset
+        } else if (temp->trainID > trainID) {
+            // Shift range: fibMMm2 becomes fibM, fibMMm1 becomes fibMMm2
+            fibM = fibMMm2;
+            fibMMm1 -= fibMMm2;
+            fibMMm2 = fibM - fibMMm1;
+        } else {
+            // Train found
+            std::cout << "Train ID " << trainID << " found. Details:\n";
+            std::cout << "Destination: " << temp->destination << ", Train Name: " << temp->trainName
+                      << ", Departure Hour: " << temp->hour / 100 << ":"
+                      << (temp->hour % 100 < 10 ? "0" : "") << temp->hour % 100 << "\n";
             return;
         }
-        current = current->next;
     }
-    std::cout << "Train ID " << trainID << " not found.\n";
 
+    // Check the last possible element
+    if (fibMMm1 && current && current->trainID == trainID) {
+        std::cout << "Train ID " << trainID << " found. Details:\n";
+        std::cout << "Destination: " << current->destination << ", Train Name: " << current->trainName
+                  << ", Departure Hour: " << current->hour / 100 << ":"
+                  << (current->hour % 100 < 10 ? "0" : "") << current->hour % 100 << "\n";
+        return;
+    }
+
+    std::cout << "Train ID " << trainID << " not found.\n";
 }
+
 
 int* collecthours(int& numTrains) {
     if (!weekQueueHead || !weekQueueHead->head) {
@@ -638,44 +685,71 @@ int* collecthours(int& numTrains) {
 
 void jumpSearchByDeparture(int hour) {
     int numTrains;
-    int* hours = collecthours(numTrains); 
+    int* hours = collecthours(numTrains);  // Collect all train departure hours
 
     if (numTrains == 0) {
         std::cout << "No train schedule available.\n";
         return;
     }
 
-    int step = std::sqrt(numTrains);
+    int step = std::sqrt(numTrains);  // Jump step
     int prev = 0;
 
+    // Find the block where the hour might be present
     while (hours[std::min(step, numTrains) - 1] < hour) {
         prev = step;
         step += std::sqrt(numTrains);
-        if (prev >= numTrains) {  
-            std::cout << "Train ID " << hour << " not found.\n";
+        if (prev >= numTrains) {
+            std::cout << "Departure hour " << hour << " not found.\n";
             delete[] hours;
             return;
         }
     }
 
-    while (hours[prev] < hour) {
+    // Perform a linear search within the identified block
+    while (prev < std::min(step, numTrains) && hours[prev] < hour) {
         prev++;
-        if (prev == std::min(step, numTrains)) { 
-            std::cout << "Train ID " << hour << " not found.\n";
-            delete[] hours; 
-            return;
-        }
     }
 
-    // Check if the train ID be found
-    if (hours[prev] == hour) {
-        std::cout << "Train ID " << hour << " found.\n";
+    // Check if the hour is present
+    if (prev < numTrains && hours[prev] == hour) {
+        std::cout << "Departure hour " << hour << " found. Here is the schedule:\n";
+
+        // Traverse the weekly queue and display trains matching the hour
+        DayNode* currentDay = weekQueueHead;
+        bool found = false;
+
+        while (currentDay != nullptr) {
+            Node* temp = currentDay->head;
+            while (temp != nullptr) {
+                if (temp->hour == hour) {
+                    if (!found) {
+                        std::cout << "Train(s) departing at " << hour << ":\n";
+                    }
+                    std::cout << "Day: " << currentDay->dayName << std::endl;
+                    std::cout << "  Train ID: " << temp->trainID
+                              << ", Destination: " << temp->destination
+                              << ", Train Name: " << temp->trainName
+                              << ", Hour: " << hour / 100 << ":"
+                              << (hour % 100 < 10 ? "0" : "") << hour % 100
+                              << std::endl;
+                    found = true;
+                }
+                temp = temp->next;
+            }
+            currentDay = currentDay->next;
+        }
+
+        if (!found) {
+            std::cout << "No trains found departing at " << hour << ".\n";
+        }
     } else {
-        std::cout << "Train ID " << hour << " not found.\n";
+        std::cout << "Departure hour " << hour << " not found.\n";
     }
 
     delete[] hours;  // Free dynamically allocated memory
 }
+
 
 void badCharHeuristic(const std::string& trainName, int badChar[256]) {
     // Initialize all occurrences as -1
@@ -691,46 +765,56 @@ void badCharHeuristic(const std::string& trainName, int badChar[256]) {
 
 
 void boyerMooreSearchByName(const std::string& targetName) {
-    if (!weekQueueHead || !weekQueueHead->head) {
+    if (!weekQueueHead) {
         std::cout << "No train schedule available.\n";
         return;
     }
 
-    Node* temp = weekQueueHead->head;  // Starting from today's schedule
+    DayNode* currentDay = weekQueueHead;
     bool found = false;
 
-    while (temp != nullptr) {
-        int m = targetName.size();
-        int n = temp->trainName.size();
+    while (currentDay != nullptr) {
+        Node* temp = currentDay->head;  // Start from the first train of the day
+        while (temp != nullptr) {
+            int m = targetName.size();
+            int n = temp->trainName.size();
 
-        int badChar[256];
-        badCharHeuristic(targetName, badChar);
+            int badChar[256];
+            badCharHeuristic(targetName, badChar);
 
-        int shift = 0;  // Shift of the pattern with respect to text
-        while (shift <= (n - m)) {
-            int j = m - 1;
+            int shift = 0;  // Shift of the pattern with respect to text
+            while (shift <= (n - m)) {
+                int j = m - 1;
 
-            // Keep reducing index j of pattern while characters of pattern and text are matching at this shift
-            while (j >= 0 && targetName[j] == temp->trainName[shift + j]) {
-                j--;
+                // Reduce index j of pattern while characters of pattern and text match
+                while (j >= 0 && targetName[j] == temp->trainName[shift + j]) {
+                    j--;
+                }
+
+                // If the pattern matches the substring of text
+                if (j < 0) {
+                    std::cout << "Train Name \"" << targetName << "\" found on " << currentDay->dayName << ".\n";
+                    std::cout << "Details:\n";
+                    std::cout << "  Train ID: " << temp->trainID << "\n";
+                    std::cout << "  Destination: " << temp->destination << "\n";
+                    std::cout << "  Departure Hour: " << temp->hour << "\n";
+                    found = true;
+                    break;
+                } else {
+                    // Shift the pattern
+                    shift += std::max(1, j - badChar[(int)temp->trainName[shift + j]]);
+                }
             }
 
-            // If the pattern is present at the current shift, then index j will become -1 after the above loop
-            if (j < 0) {
-                std::cout << "Train Name \"" << targetName << "\" found in today's schedule.\n";
-                found = true;
-                break;
-            } else {
-                // Shift the pattern so that the bad character in text aligns with the last occurrence of it in pattern
-                shift += std::max(1, j - badChar[(int)temp->trainName[shift + j]]);
-            }
+            if (found) break;
+            temp = temp->next;  // Move to the next train
         }
 
         if (found) break;
-        temp = temp->next;  // Move to the next train in today's schedule
+        currentDay = currentDay->next;  // Move to the next day's schedule
     }
 
     if (!found) {
-        std::cout << "Train Name \"" << targetName << "\" not found in today's schedule.\n";
+        std::cout << "Train Name \"" << targetName << "\" not found in the weekly schedule.\n";
     }
 }
