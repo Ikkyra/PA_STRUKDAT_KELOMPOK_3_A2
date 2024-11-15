@@ -25,7 +25,7 @@ void displayTodaySchedule();
         // Stack
 void updateTrainSchedule(int trainID, int newHour);
 // Sort
-void quickSort();
+void quickSort(int check);
 void mergeSort();
 // Search
 void fibonacciSearchByTrainID(int trainID);
@@ -130,7 +130,7 @@ int main() {
                 break;
 
             case 7:
-                quickSort();
+                quickSort(0);
                 break;
 
             case 8:
@@ -138,6 +138,7 @@ int main() {
                 break;
 
             case 9:
+                quickSort(1);
                 std::cout << "Enter Train ID to Search: ";
                 std::cin >> input;
                 while (!isInteger(input)) {
@@ -180,7 +181,6 @@ int jeda() {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     return 0;
 }
-
 
 bool isInteger(const std::string& str) {
     for (char const &c : str) {
@@ -264,6 +264,7 @@ void enqueueTrain(DayNode* day, int trainID, const std::string& destination, con
         std::cout << "Cannot add more trains for " << day->dayName << ". Maximum of 5 trains reached.\n";
         return;
     }
+
     Node* current = day->head;
     while (current != nullptr) {
         if (current->trainID == trainID) {
@@ -277,16 +278,13 @@ void enqueueTrain(DayNode* day, int trainID, const std::string& destination, con
         current = current->next;
     }
 
+    // Create a new node for the train
     Node* newNode = new Node(trainID, destination, trainName, hour);
-    if (!day->head) {
-        day->head = newNode;
-    } else {
-        Node* temp = day->head;
-        while (temp->next != nullptr) {
-            temp = temp->next;
-        }
-        temp->next = newNode;
-    }
+
+    // Stack-like behavior: Insert the new train at the front (top) of the list
+    newNode->next = day->head;
+    day->head = newNode;
+
     std::cout << "Train added to " << day->dayName << " schedule.\n";
 }
 
@@ -405,7 +403,7 @@ void updateTrainSchedule(int trainID, int newHour) {
             current->hour = newHour;
             std::cout << "Train schedule updated for Train ID " << trainID << " to new hour " << newHour << ".\n";
             found = true;
-            break; 
+            break;
         }
         current = current->next;
     }
@@ -417,22 +415,37 @@ void updateTrainSchedule(int trainID, int newHour) {
 
 
 // QuickSort partition function for linked list
-Node* partition(Node* low, Node* high, Node** newLow, Node** newHigh) {
+Node* partition(int check, Node* low, Node* high, Node** newLow, Node** newHigh) {
     Node* pivot = high;
     Node* prev = nullptr, *cur = low, *tail = pivot;
 
     while (cur != pivot) {
-        if (cur->hour < pivot->hour) {
-            if ((*newLow) == nullptr) (*newLow) = cur;
-            prev = cur;
-            cur = cur->next;
-        } else {
-            if (prev) prev->next = cur->next;
-            Node* temp = cur->next;
-            cur->next = nullptr;
-            tail->next = cur;
-            tail = cur;
-            cur = temp;
+        if(check == 1){
+            if (cur->trainID < pivot->trainID) {
+                if ((*newLow) == nullptr) (*newLow) = cur;
+                prev = cur;
+                cur = cur->next;
+            } else {
+                if (prev) prev->next = cur->next;
+                Node* temp = cur->next;
+                cur->next = nullptr;
+                tail->next = cur;
+                tail = cur;
+                cur = temp;
+            }
+        }else{
+            if (cur->hour < pivot->hour) {
+                if ((*newLow) == nullptr) (*newLow) = cur;
+                prev = cur;
+                cur = cur->next;
+            } else {
+                if (prev) prev->next = cur->next;
+                Node* temp = cur->next;
+                cur->next = nullptr;
+                tail->next = cur;
+                tail = cur;
+                cur = temp;
+            }
         }
     }
     if ((*newLow) == nullptr) (*newLow) = pivot;
@@ -449,89 +462,37 @@ Node* getTail(Node* head) {
 }
 
 // Recursive QuickSort helper for linked list
-Node* quickSortHelper(Node* low, Node* high) {
+Node* quickSortHelper(int check, Node* low, Node* high) {
     if (!low || low == high) return low;
 
     Node* newLow = nullptr, *newHigh = nullptr;
-    Node* pivot = partition(low, high, &newLow, &newHigh);
+    Node* pivot = partition(check, low, high, &newLow, &newHigh);
 
     if (newLow != pivot) {
         Node* temp = newLow;
         while (temp->next != pivot) temp = temp->next;
         temp->next = nullptr;
 
-        newLow = quickSortHelper(newLow, temp);
+        newLow = quickSortHelper(check, newLow, temp);
 
         temp = getTail(newLow);
         temp->next = pivot;
     }
 
-    pivot->next = quickSortHelper(pivot->next, newHigh);
+    pivot->next = quickSortHelper(check, pivot->next, newHigh);
     return newLow;
 }
 
 // QuickSort main function for today's schedule
-void quickSort() {
+void quickSort(int check) {
     if (weekQueueHead && weekQueueHead->head) {
-        weekQueueHead->head = quickSortHelper(weekQueueHead->head, getTail(weekQueueHead->head));
+        weekQueueHead->head = quickSortHelper(check ,weekQueueHead->head, getTail(weekQueueHead->head));
         std::cout << "Today's schedule sorted by Train ID (Quick Sort):\n";
         displayTodaySchedule();  // Display the sorted schedule
     }
 }
 
 // Merge function to merge two sorted linked lists for merge sort
-Node* partition(Node* low, Node* high, Node** newLow, Node** newHigh) {
-    Node* pivot = high;
-    Node* prev = nullptr, *cur = low, *tail = pivot;
-
-    while (cur != pivot) {
-        if (cur->trainID < pivot->trainID) {
-            if ((*newLow) == nullptr) (*newLow) = cur;
-            prev = cur;
-            cur = cur->next;
-        } else {
-            if (prev) prev->next = cur->next;
-            Node* temp = cur->next;
-            cur->next = nullptr;
-            tail->next = cur;
-            tail = cur;
-            cur = temp;
-        }
-    }
-    if ((*newLow) == nullptr) (*newLow) = pivot;
-    (*newHigh) = tail;
-    return pivot;
-}
-
-// Mengembalikan pointer ke node terakhir dari linked list
-Node* getTail(Node* head) {
-    while (head != nullptr && head->next != nullptr) {
-        head = head->next;
-    }
-    return head;
-}
-
-Node* quickSortHelper(Node* low, Node* high) {
-    if (!low || low == high) return low;
-
-    Node* newLow = nullptr, *newHigh = nullptr;
-    Node* pivot = partition(low, high, &newLow, &newHigh);
-
-    if (newLow != pivot) {
-        Node* temp = newLow;
-        while (temp->next != pivot) temp = temp->next;
-        temp->next = nullptr;
-
-        newLow = quickSortHelper(newLow, temp);
-
-        temp = getTail(newLow);
-        temp->next = pivot;
-    }
-
-    pivot->next = quickSortHelper(pivot->next, newHigh);
-    return newLow;
-}
-
 Node* merge(Node* left, Node* right) {
     if (!left) return right;
     if (!right) return left;
@@ -574,6 +535,7 @@ Node* mergeSortHelper(Node* head) {
 
 // MergeSort main function for today's schedule
 void mergeSort() {
+
     if (weekQueueHead && weekQueueHead->head) {
         weekQueueHead->head = mergeSortHelper(weekQueueHead->head);
         std::cout << "Today's schedule sorted by Train Name:\n";
@@ -596,7 +558,7 @@ void fibonacciSearchByTrainID(int trainID) {
         std::cout << "No train schedule available.\n";
         return;
     }
-
+    
     // Calculate Fibonacci numbers
     int fibMMm2 = 0;  // (m-2)'th Fibonacci number
     int fibMMm1 = 1;  // (m-1)'th Fibonacci number
@@ -795,8 +757,9 @@ void boyerMooreSearchByName(const std::string& targetName) {
                 if (j < 0) {
                     std::cout << "Train Name \"" << targetName << "\" found on " << currentDay->dayName << ".\n";
                     std::cout << "Details:\n";
-                    std::cout << "  Train ID: " << temp->trainID << "\n";
-                    std::cout << "  Destination: " << temp->destination << "\n";
+                    std::cout << "  Train ID: " << temp->trainID << "";
+                    std::cout << "  Train Name: " << temp->trainName << "";
+                    std::cout << "  Destination: " << temp->destination << "";
                     std::cout << "  Departure Hour: " << temp->hour << "\n";
                     found = true;
                     break;
