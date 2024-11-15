@@ -181,6 +181,7 @@ int jeda() {
     return 0;
 }
 
+
 bool isInteger(const std::string& str) {
     for (char const &c : str) {
         if (std::isdigit(c) == 0) return false;
@@ -479,6 +480,58 @@ void quickSort() {
 }
 
 // Merge function to merge two sorted linked lists for merge sort
+Node* partition(Node* low, Node* high, Node** newLow, Node** newHigh) {
+    Node* pivot = high;
+    Node* prev = nullptr, *cur = low, *tail = pivot;
+
+    while (cur != pivot) {
+        if (cur->trainID < pivot->trainID) {
+            if ((*newLow) == nullptr) (*newLow) = cur;
+            prev = cur;
+            cur = cur->next;
+        } else {
+            if (prev) prev->next = cur->next;
+            Node* temp = cur->next;
+            cur->next = nullptr;
+            tail->next = cur;
+            tail = cur;
+            cur = temp;
+        }
+    }
+    if ((*newLow) == nullptr) (*newLow) = pivot;
+    (*newHigh) = tail;
+    return pivot;
+}
+
+// Mengembalikan pointer ke node terakhir dari linked list
+Node* getTail(Node* head) {
+    while (head != nullptr && head->next != nullptr) {
+        head = head->next;
+    }
+    return head;
+}
+
+Node* quickSortHelper(Node* low, Node* high) {
+    if (!low || low == high) return low;
+
+    Node* newLow = nullptr, *newHigh = nullptr;
+    Node* pivot = partition(low, high, &newLow, &newHigh);
+
+    if (newLow != pivot) {
+        Node* temp = newLow;
+        while (temp->next != pivot) temp = temp->next;
+        temp->next = nullptr;
+
+        newLow = quickSortHelper(newLow, temp);
+
+        temp = getTail(newLow);
+        temp->next = pivot;
+    }
+
+    pivot->next = quickSortHelper(pivot->next, newHigh);
+    return newLow;
+}
+
 Node* merge(Node* left, Node* right) {
     if (!left) return right;
     if (!right) return left;
